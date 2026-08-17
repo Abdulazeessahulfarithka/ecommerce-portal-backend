@@ -4,9 +4,12 @@ import db from "./Config/db.js"
 import cors from "cors"
 import userRoute from "./Route/UserRoute.js"
 import productRoute from "./Route/ProductRoute.js"
-
+import orderRoute from "./Route/OrderRoute.js"
+import paymentRoute from "./Route/PaymentRoute.js"
+import adminRoute from "./Route/AdminRoute.js"
 
 dotenv.config()
+console.log("Stripe key loaded:", process.env.STRIPE_SECRET_KEY ? "yes" : "NO - undefined");
 const app=express()
 
 //Middleware
@@ -30,6 +33,9 @@ app.use(cors({
 //api
 app.use("/api/user",userRoute)
 app.use("/api/product",productRoute)
+app.use("/api/order",orderRoute)
+app.use("/api/payment",paymentRoute)
+app.use("/api/admin",adminRoute)
 
 //Test route
 app.get("/",(req,res)=>{
