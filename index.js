@@ -23,7 +23,7 @@ db()
 app.use(cors({
     origin:[
         "http://localhost:5173",
-        "https://ecommerce-portal-backend-4nlt.onrender.com"
+        "http://ecommerce-portal-backend-4nlt.onrender.com"
     ],
     method:["GET","POST","PUT","DELETE"],
     credentials:true,
