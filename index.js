@@ -18,7 +18,10 @@ app.use(express.urlencoded({ extended: true }));
 
 db();
 
- 
+// CORS configuration
+// FIX: was "https://localhost:5173" — Vite's dev server runs on plain HTTP,
+// not HTTPS. This mismatch alone blocks every local request with CORS errors.
+// FIX: "method" was a typo — the cors package's option is "methods".
 app.use(
   cors({
     origin: [

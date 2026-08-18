@@ -6,7 +6,7 @@ import {
   getAllOrders,
   updateOrderStatus,
 } from "../Controller/OrderController.js";
-import { requireAuth, requireAdmin } from "../middleware/authMiddleware.js";
+import { requireAuth, requireAdmin } from "../MiddleWare/AuthMiddleware.js";
 
 const router = express.Router();
 
