@@ -3,14 +3,7 @@
 import { Order } from "../Model/Order.js";
 import { sendOrderConfirmationEmail } from "../Utils/sendEmail.js";
  
-// ---------------------------------------------
-// POST /api/order/create
-// Called AFTER Stripe payment is confirmed (paymentIntent.status === "succeeded").
-// Body: { items, shippingAddress, total, stripePaymentIntentId }
-//   items: [{ product, name, quantity, price }]
-//   shippingAddress: { line1, line2, city, state, postalCode, country }
-// req.user comes from requireAuth middleware
-// ---------------------------------------------
+
 export const createOrder = async (req, res) => {
   try {
     const { items, shippingAddress, total, stripePaymentIntentId } = req.body;
@@ -42,10 +35,6 @@ export const createOrder = async (req, res) => {
   }
 };
  
-// ---------------------------------------------
-// GET /api/order/my-orders
-// Logged-in user's own order history
-// ---------------------------------------------
 export const getMyOrders = async (req, res) => {
   try {
     const orders = await Order.find({ user: req.user._id }).sort({
@@ -59,10 +48,7 @@ export const getMyOrders = async (req, res) => {
   }
 };
  
-// ---------------------------------------------
-// GET /api/order/:id
-// Single order detail (owner or admin)
-// ---------------------------------------------
+
 export const getOrderById = async (req, res) => {
   try {
     const order = await Order.findById(req.params.id);

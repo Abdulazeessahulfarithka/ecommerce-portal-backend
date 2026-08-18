@@ -2,11 +2,8 @@ import { Order } from "../Model/Order.js";
 import Product from "../Model/Product.js";
 import User from "../Model/User.js";
 
-// ---------------------------------------------
-// GET /api/admin/dashboard-stats
-// Admin only. Returns everything the dashboard overview page needs
-// in a single call instead of fetching all products/orders client-side.
-// ---------------------------------------------
+
+
 export const getDashboardStats = async (req, res) => {
   try {
     const [productCount, orderCount, userCount, orders] = await Promise.all([
