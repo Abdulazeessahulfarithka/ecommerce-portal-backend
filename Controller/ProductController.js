@@ -1,31 +1,51 @@
-import Proudct from '../Model/Product.js'
+import Product from "../Model/Product.js"; // FIX: was "Proudct" (typo) — every
+import {uploadMultipleToCloudinary} from "../Utils/cloudinaryUpload.js"
 
-export const createProduct = async(req,res)=>{
-    try{
-        const{name,description,price,images,stock,category}=req.body
 
-        if(!name || !description || !price || !stock || !category){
-            return res.status(400).json({
-                success:false,
-                message:"All fields are required"
-            })
-            const product = await Product.create({name,description,price,images,stock,category})
 
-            res.status(201).json({
-                success:true,
-                message:"product create successfully",
-                product,
-            })
-        }
-    }catch(error){
-        res.status(500).json({
-            success:false,
-            message:error.message
-        })
+export const createProduct = async (req, res) => {
+  try {
+    const { name, description, price,stock, category } = req.body;
 
+    if (!name || !description || !price || !stock || !category) {
+      return res.status(400).json({
+        success: false,
+        message: "All fields are required",
+      });
     }
+
+    
+let images = [];
+if (req.files && req.files.length > 0) {
+  images = await uploadMultipleToCloudinary(req.files);
+} else if (Array.isArray(req.body.images)) {
+  images = req.body.images;
 }
 
+
+    const product = await Product.create({
+      name,
+      description,
+      price,
+      images,
+      stock,
+      category,
+    });
+
+    res.status(201).json({
+      success: true,
+      message: "Product created successfully",
+      product,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+// GET /api/product?search=&category=&page=
 export const getProducts = async (req, res) => {
   try {
     const { search, category, page = 1 } = req.query;
@@ -53,32 +73,42 @@ export const getProducts = async (req, res) => {
   }
 };
 
-export const getProductById = async (req,res) =>{
-    try{
-       const product = await Product.findById(req.parms.id)
+// GET /api/product/:id
+export const getProductById = async (req, res) => {
+  try {
+    // FIX: was req.parms.id (typo) — should be req.params.id
+    const product = await Product.findById(req.params.id);
 
-       if(!product){
-        return res.status(404).json({
-            success:false,
-            message:"Product not found"
-        })
-       }
-       res.status(200).json({success:true, product})
-    }catch(error){
-           res.status(500).json({ success: false, message: error.message });
+    if (!product) {
+      return res.status(404).json({
+        success: false,
+        message: "Product not found",
+      });
     }
-}
+    res.status(200).json({ success: true, product });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
 
+// PUT /api/product/:id — admin only
 export const updateProduct = async (req, res) => {
   try {
-    const product = await Product.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const product = await Product.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+    });
 
     if (!product) {
       return res.status(404).json({ success: false, message: "Product not found" });
     }
 
-    // Push the new stock level to every connected client viewing this product
-    req.app.get("io").emit("stock:update", { productId: product._id, stock: product.stock });
+    // Push the new stock level to every connected client viewing this product.
+    // Requires Socket.IO to be set up via req.app.set("io", io) in index.js.
+    // If you haven't wired that up yet, this is guarded so it won't crash.
+    const io = req.app.get("io");
+    if (io) {
+      io.emit("stock:update", { productId: product._id, stock: product.stock });
+    }
 
     res.status(200).json({
       success: true,
@@ -90,7 +120,7 @@ export const updateProduct = async (req, res) => {
   }
 };
 
-// DELETE /api/products/:id — admin only
+// DELETE /api/product/:id — admin only
 export const deleteProduct = async (req, res) => {
   try {
     const product = await Product.findByIdAndDelete(req.params.id);
@@ -105,7 +135,7 @@ export const deleteProduct = async (req, res) => {
   }
 };
 
-// POST /api/products/:id/reviews
+// POST /api/product/:id/review — logged-in users only
 export const addReview = async (req, res) => {
   try {
     const { rating, comment } = req.body;
@@ -119,12 +149,19 @@ export const addReview = async (req, res) => {
       return res.status(404).json({ success: false, message: "Product not found" });
     }
 
-    const alreadyReviewed = product.reviews.some((r) => r.user.toString() === req.user.id);
+    const alreadyReviewed = product.reviews.some(
+      (r) => r.user.toString() === req.user.id
+    );
     if (alreadyReviewed) {
       return res.status(409).json({ success: false, message: "You've already reviewed this product" });
     }
 
-    product.reviews.push({ user: req.user.id, userName: req.user.name || "Anonymous", rating, comment });
+    product.reviews.push({
+      user: req.user.id,
+      userName: req.user.name || "Anonymous",
+      rating,
+      comment,
+    });
     product.recalculateRating();
     await product.save();
 

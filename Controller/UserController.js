@@ -43,7 +43,7 @@ export  const registerUser = async (req,res)=>{
 export const loginUser =async (req,res)=>{
 
     try{
-      const {email,passsword}= req.body
+      const {email,password}= req.body
 if(!email || !password){
     return res.status(400).json({
         success:false,
@@ -70,9 +70,8 @@ if(!email || !password){
 const token = jwt.sign(  
     {
     id:user._id},
-    {
-        expriresIn:"7d",
-    }
+    process.env.JWT_SECRET,
+    { expiresIn:"7d"}
 )
 
      res.status(200).json({
@@ -82,6 +81,7 @@ const token = jwt.sign(
             id:user._id,
             name:user.name,
             email:user.email,
+            role:user.role,
         },
         token,
 
@@ -91,7 +91,6 @@ const token = jwt.sign(
             success:false,
             mesage:error.message,
         })
-
     }
 }
 

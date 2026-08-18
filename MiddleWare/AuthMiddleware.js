@@ -1,5 +1,5 @@
-import jwt from "jsonwebtoken"
-import User from "../Model/User.js";
+import jwt from "jsonwebtoken";
+import User from "../Model/User.js"; // adjust path to your actual User model
 
 // ---------------------------------------------
 // requireAuth: verifies the JWT sent by the client
@@ -43,10 +43,10 @@ export const requireAuth = async (req, res, next) => {
 
 // ---------------------------------------------
 // requireAdmin: use AFTER requireAuth on admin-only routes
-// e.g. router.post("/product", requireAuth, requireAdmin, createProduct)
+// e.g. router.post("/", requireAuth, requireAdmin, createProduct)
 // ---------------------------------------------
- export const requireAdmin = (req, res, next) => {
-  if (!req.user || req.user.role !== "admin") {
+export const requireAdmin = (req, res, next) => {
+  if (!req.user || !req.user.isAdmin) {
     return res.status(403).json({
       success: false,
       message: "Admin access only",
@@ -54,5 +54,3 @@ export const requireAuth = async (req, res, next) => {
   }
   next();
 };
-
-
