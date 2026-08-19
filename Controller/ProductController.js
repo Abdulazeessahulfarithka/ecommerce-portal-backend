@@ -5,7 +5,7 @@ import {uploadMultipleToCloudinary} from "../Utils/cloudinaryUpload.js"
 
 export const createProduct = async (req, res) => {
   try {
-    const { name, description, price,stock, category } = req.body;
+    const { name, description, price,stock, category,subCategory} = req.body;
 
     if (!name || !description || !price || !stock || !category) {
       return res.status(400).json({
@@ -30,6 +30,7 @@ if (req.files && req.files.length > 0) {
       images,
       stock,
       category,
+      subCategory,
     });
 
     res.status(201).json({
@@ -47,8 +48,21 @@ if (req.files && req.files.length > 0) {
 
 export const getCategories = async  (req,res) =>{
     try{
-      const categories = await Product.distinct("category")
-      res.status(200).json({success:true,categories})
+      const results = await Product.aggregate([
+        {
+          $group:{
+            _id:"$category",
+            subCategories:{ $addToSet:"$subCategory"}
+          }
+        }, { $sort: { _id: 1 } },
+      ])
+      const categories = results.map((r) => ({
+      category: r._id,
+      // Filter out null/empty subCategory values (products without one)
+      subCategories: r.subCategories.filter(Boolean).sort(),
+    }));
+ 
+    res.status(200).json({ success: true, categories });
     }catch(error){
        res.status(500).json({success:false,message:error.message})
     }
@@ -57,12 +71,13 @@ export const getCategories = async  (req,res) =>{
 // GET /api/product?search=&category=&page=
 export const getProducts = async (req, res) => {
   try {
-    const { search, category, page = 1 } = req.query;
+    const { search, category,subCategory,page = 1 } = req.query;
     const limit = 12;
     const skip = (Number(page) - 1) * limit;
     const filter = {
       ...(search && { name: { $regex: String(search), $options: "i" } }),
       ...(category && { category: String(category) }),
+      ...(subCategory && {subCategory: String(subCategory)})
     };
 
     const [products, total] = await Promise.all([

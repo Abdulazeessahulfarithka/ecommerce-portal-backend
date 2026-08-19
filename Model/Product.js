@@ -20,6 +20,7 @@ const productSchema = new mongoose.Schema(
     images: { type: [String], default: [] },
     description: { type: String, required: true },
     category: { type: String, required: true, index: true },
+    subCategory:{type:String,index:true},
     avgRating: { type: Number, default: 0 },
     reviewCount: { type: Number, default: 0 },
     // Added: addReview() in the controller pushes into this array —
