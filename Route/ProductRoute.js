@@ -6,6 +6,7 @@ import {
   deleteProduct,
   updateProduct,
   addReview,
+  getCategories,
 } from "../Controller/ProductController.js";
 import { requireAuth, requireAdmin } from "../MiddleWare/AuthMiddleware.js";
 import upload from "../MiddleWare/UploadMiddleware.js";
@@ -14,6 +15,7 @@ const router = express.Router();
 
 // Public routes — anyone can browse products
 router.get("/", getProducts);
+router.get("/categories",getCategories)
 router.get("/:id", getProductById);
 
 // Logged-in users can leave a review

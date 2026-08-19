@@ -45,6 +45,15 @@ if (req.files && req.files.length > 0) {
   }
 };
 
+export const getCategories = async  (req,res) =>{
+    try{
+      const categories = await Product.distinct("category")
+      res.status(200).json({success:true,categories})
+    }catch(error){
+       res.status(500).json({success:false,message:error.message})
+    }
+}
+
 // GET /api/product?search=&category=&page=
 export const getProducts = async (req, res) => {
   try {
@@ -94,8 +103,17 @@ export const getProductById = async (req, res) => {
 // PUT /api/product/:id — admin only
 export const updateProduct = async (req, res) => {
   try {
-    const product = await Product.findByIdAndUpdate(req.params.id, req.body, {
+    const updateData = { ...req.body };
+
+    if (req.files && req.files.length > 0) {
+      updateData.images = await uploadMultipleToCloudinary(req.files);
+    } else if (Array.isArray(req.body.images)) {
+      updateData.images = req.body.images;
+    }
+
+    const product = await Product.findByIdAndUpdate(req.params.id, updateData, {
       new: true,
+      runValidators: true,
     });
 
     if (!product) {
@@ -104,7 +122,7 @@ export const updateProduct = async (req, res) => {
 
     // Push the new stock level to every connected client viewing this product.
     // Requires Socket.IO to be set up via req.app.set("io", io) in index.js.
-    // If you haven't wired that up yet, this is guarded so it won't crash.
+    // Guarded so this doesn't crash if Socket.IO hasn't been wired up yet.
     const io = req.app.get("io");
     if (io) {
       io.emit("stock:update", { productId: product._id, stock: product.stock });
