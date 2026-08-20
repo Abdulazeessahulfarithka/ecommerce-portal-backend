@@ -26,8 +26,7 @@ app.use(
   cors({
     origin: [
       "http://localhost:5173",
-      // Add your deployed frontend URL here once you deploy it, e.g.:
-      // "https://your-frontend.vercel.app",
+       "https://novamarts.netlify.app"
     ],
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
